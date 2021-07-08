@@ -1,6 +1,7 @@
 # Week 5: The Dashboard Project
 
 ![Dashboard](https://github.com/pbamoo/Dashboard_Northwind/blob/main/Images/postgres.svg)
+
 source: https://krspiced.pythonanywhere.com/chapters/project_dashboard/postgresql/README.html
    
 ### Background problem / Goal:
