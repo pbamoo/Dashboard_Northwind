@@ -1,4 +1,6 @@
 # Week 5: The Dashboard Project
+
+![Dashboard](https://github.com/pbamoo/Dashboard_Northwind/blob/main/Images/postgres.svg)
    
 ### Background problem / Goal:
 The goal for this project was to build a metabase dashboard summarizing the Northwind Database which contains all sales transactions between the fictional company “Northwind Traders” and its customers as well as purchases from Northwinds suppliers. The dashboard will be built on top of a Postgres database that runs in the AWS cloud.
