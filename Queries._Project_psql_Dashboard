@@ -1,0 +1,109 @@
+6. Project: Dashboard
+
+Analyze The Northwind Dataset
+
+Workflow
+i. create a Postgres database
+i. Download the data from GitHub.
+iii. create the table definitions
+iv. use the SQL COPY command to load the CSV files into the database
+v. write SQL queries to retrieve data by answering the questions below
+vi.   load CSV files into a database
+vii.  use the sqlalchemy library to access a db from Python
+viii. build a dashboard
+ix.   upload everything into a cloud server
+
+Step v - SQL queries
+1. Get the names and the quantities in stock for each product.
+SELECT productName, quantityPerUnit FROM Products;
+
+2. Get a list of current products (Product ID and name).
+SELECT ProductID, ProductName FROM Products WHERE Discontinued = False; (Method 1)
+SELECT ProductID, ProductName FROM Products WHERE Discontinued = 0; (Method 2)
+
+3. Get a list of the most and least expensive products (name and unit price).
+SELECT productName, unitPrice FROM products ORDER BY unitPrice DESC;
+SELECT productName, unitPrice FROM products WHERE unitPrice > 200 OR unitPrice < 3 ORDER BY unitPrice DESC;
+SELECT MAX(UnitPrice), MIN(UnitPrice) FROM Products;
+
+4. Get products that cost less than $20.
+SELECT productID, productName, unitPrice FROM products WHERE unitPrice<20
+SELECT ProductID, ProductName, UnitPrice FROM Products WHERE (((UnitPrice)<20) AND ((Discontinued)=False)) ORDER BY UnitPrice DESC;
+
+5. Get products that cost between $15 and $25.
+SELECT ProductID, ProductName, UnitPrice FROM Products WHERE UnitPrice >=15 AND UnitPrice <=25 ORDER BY UnitPrice DESC;
+SELECT ProductID, ProductName, UnitPrice FROM Products WHERE UnitPrice >=15 AND UnitPrice <=25  AND Discontinued=0 ORDER BY UnitPrice DESC;
+
+6. Get products above average price.
+SELECT avg(UnitPrice) FROM Products : to get average of column unitPrice
+SELECT productName, unitPrice FROM products WHERE UnitPrice > (SELECT avg(UnitPrice) FROM Products) ORDER BY unitPrice DESC;
+
+7. Find the ten most expensive products.
+SELECT productName, unitPrice FROM products ORDER BY unitPrice DESC LIMIT 10;
+SELECT DISTINCT ProductName as Ten_Most_Expensive_Products, unitPrice FROM products ORDER BY unitPrice DESC LIMIT 10;
+
+8. Get a list of discontinued products (Product ID and name).
+SELECT ProductID, ProductName FROM Products WHERE Discontinued = 1;
+
+9. Count current and discontinued products.
+SELECT Count(productID) FROM products GROUP BY Discontinued;
+
+10. Find products with less units in stock than the quantity on order.
+SELECT productName,  unitsOnOrder, UnitsInStock FROM products WHERE unitsInStock < unitsOnOrder;
+SELECT productName,  unitsOnOrder, UnitsInStock FROM products WHERE unitsInStock < unitsOnOrder AND discontinued=0;
+
+11. Find the customer who had the highest order amount
+SELECT customer_id, COUNT(*) FROM orders GROUP BY customer_id ORDER BY orders DESC LIMIT 1;
+
+12. Get orders for a given employee and the according customer
+SELECT employees.lastname, customers.companyname, orders.orderid
+FROM orders JOIN employees ON orders.employeeid = employees.employeeid
+JOIN customers ON orders.customerid = customers.customerid ORDER BY lastname, companyname;
+
+
+13. Find the hiring age of each employee
+SELECT CONCAT(titleOfCourtesy, lastName, ' ', firstName) AS fullName,  hireDate - birthDate as hiringAGE FROM employees; (gives answer in days)
+select CONCAT(titleOfCourtesy, lastName, ' ', firstName) AS fullName, age(hiredate, birthdate) from employees; (gives answer in y,m,d)
+select CONCAT(titleOfCourtesy, lastName, ' ', firstName) AS fullName, extract(year from age(hiredate, birthdate)) as hireage from employees;
+
+14. Calculate employee revenue
+SELECT e.firstName, e.lastName, SUM(od.unit_price*od.quantity) AS revenue FROM orders As o JOIN employees AS e ON o.employeeID=e.employeeID
+JOIN order_details AS od ON o.orderID=od.orderID GROUP BY e.firstName, e.lastName ORDER BY revenue DESC;
+
+15. Create a view of all the relevant columns from all the tables
+CREATE VIEW all_data AS
+	(SELECT categories.category_id, categories.category_name,
+		products.product_id, products.product_name,products.unit_price,
+		order_details.order_id, order_details.quantity,
+		orders.customer_id, orders.order_date, orders.ship_country, orders.ship_city,
+		customers.city, customers.country
+	FROM categories
+	JOIN products on products.category_id = categories.category_id
+	JOIN order_details on order_details.product_id = products.product_id
+	JOIN orders on orders.order_id = order_details.order_id
+	JOIN customers on customers.customer_id = orders.customer_id);
+
+16. Mark products as expensive of inexpensive
+SELECT product_id,
+CASE
+	WHEN unit_price > 150 THEN 'expensive'
+	ELSE 'inexpensive' END
+FROM order_details;
+
+17. Calculate the average order value per country
+SELECT
+	AVG(order_details.product_id * order_details.unit_price - order_details.discount) AS order_value,
+	orders.ship_country
+FROM order_details
+JOIN orders on orders.order_id = order_details.order_id
+GROUP BY orders.ship_country
+ORDER BY order_value DESC;
+
+18. Calculate the average order value by date
+SELECT
+	AVG(order_details.product_id * order_details.unit_price - order_details.discount) AS order_value,
+	orders.order_date
+FROM order_details
+JOIN orders on orders.order_id = order_details.order_id
+GROUP BY orders.order_date
+ORDER BY order_value DESC;
